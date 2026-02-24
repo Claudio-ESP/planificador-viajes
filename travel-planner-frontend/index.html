@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planificador de Viajes</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>✈️ Planificador de Viajes</h1>
+      <p class="subtitle">Organiza tu próxima aventura</p>
+    </header>
+
+    <form id="tripForm" novalidate>
+      <div class="form-group">
+        <label for="origen">Origen *</label>
+        <input type="text" id="origen" name="origen" placeholder="Ej: Madrid" required />
+      </div>
+
+      <div class="form-group">
+        <label for="destino">Destino *</label>
+        <input type="text" id="destino" name="destino" placeholder="Ej: París" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fechaSalida">Fecha de salida *</label>
+          <input type="date" id="fechaSalida" name="fechaSalida" required />
+        </div>
+        <div class="form-group">
+          <label for="fechaVuelta">Fecha de vuelta</label>
+          <input type="date" id="fechaVuelta" name="fechaVuelta" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="presupuestoMax">Presupuesto máximo (€)</label>
+        <input type="number" id="presupuestoMax" name="presupuestoMax" placeholder="Ej: 1500" min="0" />
+      </div>
+
+      <div class="form-group">
+        <label for="estilo">Estilo de viaje</label>
+        <select id="estilo" name="estilo">
+          <option value="barato">Barato</option>
+          <option value="equilibrado" selected>Equilibrado</option>
+          <option value="comodo">Cómodo</option>
+        </select>
+      </div>
+
+      <fieldset class="form-group">
+        <legend>Preferencias</legend>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" name="preferencias" value="naturaleza" />
+            Naturaleza
+          </label>
+          <label>
+            <input type="checkbox" name="preferencias" value="comida" />
+            Comida
+          </label>
+          <label>
+            <input type="checkbox" name="preferencias" value="museos" />
+            Museos
+          </label>
+          <label>
+            <input type="checkbox" name="preferencias" value="fiesta" />
+            Fiesta
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="form-group">
+        <label for="radioCentroKm">Radio desde el centro (km)</label>
+        <select id="radioCentroKm" name="radioCentroKm">
+          <option value="1">1 km</option>
+          <option value="2" selected>2 km</option>
+          <option value="5">5 km</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-primary">Planificar viaje</button>
+    </form>
+
+    <div id="loading" class="loading" hidden>
+      <span class="spinner"></span>
+      <p>Generando tu plan de viaje...</p>
+    </div>
+
+    <div id="error" class="error" hidden></div>
+
+    <section id="results" class="results"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
