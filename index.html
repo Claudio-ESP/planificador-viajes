@@ -3,95 +3,191 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Planificador de Viajes</title>
+  <meta name="description" content="Planificador de viajes inteligente. Organiza tu próxima aventura con IA." />
+  <title>Planificador de Viajes - Crea tu próxima aventura</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="container">
-    <header>
-      <h1>✈️ Planificador de Viajes</h1>
-      <p class="subtitle">Organiza tu próxima aventura</p>
-    </header>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-brand">
+        <span class="logo-icon">✈️</span>
+        <h1 class="logo-text">Viajes</h1>
+      </div>
+      <p class="header-tagline">Planifica tu aventura perfecta</p>
+    </div>
+  </header>
 
-    <form id="tripForm" novalidate>
-      <div class="form-group">
-        <label for="origen">Origen *</label>
-        <input type="text" id="origen" name="origen" placeholder="Ej: Madrid" required />
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Formulario -->
+    <section class="form-section">
+      <div class="card card-form">
+        <h2 class="card-title">Planifica tu viaje</h2>
+        <p class="card-subtitle">Completa los detalles de tu próxima aventura</p>
+
+        <form id="tripForm" novalidate class="form">
+          <!-- Origen y Destino (2 columnas en desktop) -->
+          <div class="form-grid form-grid-2">
+            <div class="form-group">
+              <label for="origen" class="form-label">Origen *</label>
+              <input
+                type="text"
+                id="origen"
+                name="origen"
+                placeholder="Madrid, Barcelona..."
+                required
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="destino" class="form-label">Destino *</label>
+              <input
+                type="text"
+                id="destino"
+                name="destino"
+                placeholder="París, Roma, Londres..."
+                required
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <!-- Fechas (2 columnas en desktop) -->
+          <div class="form-grid form-grid-2">
+            <div class="form-group">
+              <label for="fechaSalida" class="form-label">Fecha de salida *</label>
+              <input
+                type="date"
+                id="fechaSalida"
+                name="fechaSalida"
+                required
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="fechaVuelta" class="form-label">Fecha de vuelta</label>
+              <input
+                type="date"
+                id="fechaVuelta"
+                name="fechaVuelta"
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <!-- Presupuesto y Estilo (2 columnas en desktop) -->
+          <div class="form-grid form-grid-2">
+            <div class="form-group">
+              <label for="presupuestoMax" class="form-label">Presupuesto máximo (€)</label>
+              <input
+                type="number"
+                id="presupuestoMax"
+                name="presupuestoMax"
+                placeholder="1500"
+                min="0"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="estilo" class="form-label">Estilo de viaje</label>
+              <select id="estilo" name="estilo" class="form-select">
+                <option value="barato">🏕️ Barato</option>
+                <option value="equilibrado" selected>⚖️ Equilibrado</option>
+                <option value="comodo">⭐ Cómodo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Preferencias -->
+          <fieldset class="form-group">
+            <legend class="form-label">Preferencias</legend>
+            <div class="checkbox-grid">
+              <label class="checkbox-label">
+                <input type="checkbox" name="preferencias" value="naturaleza" class="checkbox-input" />
+                <span class="checkbox-text">🌲 Naturaleza</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="preferencias" value="comida" class="checkbox-input" />
+                <span class="checkbox-text">🍽️ Comida</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="preferencias" value="museos" class="checkbox-input" />
+                <span class="checkbox-text">🏛️ Museos</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="preferencias" value="fiesta" class="checkbox-input" />
+                <span class="checkbox-text">🎉 Fiesta</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Radio desde centro -->
+          <div class="form-group">
+            <label for="radioCentroKm" class="form-label">Radio desde el centro</label>
+            <select id="radioCentroKm" name="radioCentroKm" class="form-select">
+              <option value="1">1 km (Centro)</option>
+              <option value="2" selected>2 km (Recomendado)</option>
+              <option value="5">5 km (Zona amplia)</option>
+            </select>
+          </div>
+
+          <!-- Botón Enviar -->
+          <button type="submit" class="btn btn-primary btn-lg">
+            <span class="btn-icon">🚀</span>
+            Planificar mi viaje
+          </button>
+        </form>
       </div>
 
-      <div class="form-group">
-        <label for="destino">Destino *</label>
-        <input type="text" id="destino" name="destino" placeholder="Ej: París" required />
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="fechaSalida">Fecha de salida *</label>
-          <input type="date" id="fechaSalida" name="fechaSalida" required />
+      <!-- Tips Section -->
+      <section class="tips-section">
+        <h3 class="tips-title">✨ Consejos para tu viaje</h3>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <span class="tip-icon">📅</span>
+            <h4>Planifica con tiempo</h4>
+            <p>Reserva con 2-3 meses de anticipación para mejores precios.</p>
+          </div>
+          <div class="tip-card">
+            <span class="tip-icon">💰</span>
+            <h4>Viaja en temporada baja</h4>
+            <p>Ahorrarás jusqu a 40% en temporada baja.</p>
+          </div>
+          <div class="tip-card">
+            <span class="tip-icon">🗺️</span>
+            <h4>Explora en profundidad</h4>
+            <p>Dedica tiempo a explorar más allá de los lugares turísticos.</p>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="fechaVuelta">Fecha de vuelta</label>
-          <input type="date" id="fechaVuelta" name="fechaVuelta" />
-        </div>
-      </div>
+      </section>
+    </section>
 
-      <div class="form-group">
-        <label for="presupuestoMax">Presupuesto máximo (€)</label>
-        <input type="number" id="presupuestoMax" name="presupuestoMax" placeholder="Ej: 1500" min="0" />
-      </div>
-
-      <div class="form-group">
-        <label for="estilo">Estilo de viaje</label>
-        <select id="estilo" name="estilo">
-          <option value="barato">Barato</option>
-          <option value="equilibrado" selected>Equilibrado</option>
-          <option value="comodo">Cómodo</option>
-        </select>
-      </div>
-
-      <fieldset class="form-group">
-        <legend>Preferencias</legend>
-        <div class="checkbox-group">
-          <label>
-            <input type="checkbox" name="preferencias" value="naturaleza" />
-            Naturaleza
-          </label>
-          <label>
-            <input type="checkbox" name="preferencias" value="comida" />
-            Comida
-          </label>
-          <label>
-            <input type="checkbox" name="preferencias" value="museos" />
-            Museos
-          </label>
-          <label>
-            <input type="checkbox" name="preferencias" value="fiesta" />
-            Fiesta
-          </label>
-        </div>
-      </fieldset>
-
-      <div class="form-group">
-        <label for="radioCentroKm">Radio desde el centro (km)</label>
-        <select id="radioCentroKm" name="radioCentroKm">
-          <option value="1">1 km</option>
-          <option value="2" selected>2 km</option>
-          <option value="5">5 km</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn-primary">Planificar viaje</button>
-    </form>
-
+    <!-- Loading -->
     <div id="loading" class="loading" hidden>
-      <span class="spinner"></span>
-      <p>Generando tu plan de viaje...</p>
+      <div class="spinner"></div>
+      <p class="loading-text">Generando tu plan de viaje perfecto...</p>
+      <p class="loading-sub">Esto solo toma unos segundos</p>
     </div>
 
-    <div id="error" class="error" hidden></div>
+    <!-- Error -->
+    <div id="error" class="alert alert-error" hidden role="alert">
+      <span class="alert-icon">⚠️</span>
+      <div id="error-content"></div>
+    </div>
 
-    <section id="results" class="results"></section>
+    <!-- Resultados -->
+    <section id="results" class="results-section"></section>
   </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Planifica tus viajes con inteligencia | 2026</p>
+  </footer>
 
   <script src="app.js"></script>
 </body>

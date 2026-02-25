@@ -12,7 +12,12 @@ function setLoading(isLoading) {
 
 function setError(message = "") {
   if (!errorEl) return;
-  errorEl.textContent = message;
+  const errorContent = document.getElementById("error-content");
+  if (errorContent) {
+    errorContent.textContent = message;
+  } else {
+    errorEl.textContent = message;
+  }
   errorEl.hidden = !message;
 }
 
@@ -33,56 +38,65 @@ function asLink(url) {
 function renderList(title, items) {
   if (!Array.isArray(items) || items.length === 0) {
     return `
-      <section class="card">
+      <div class="result-card">
         <h3>${escapeHtml(title)}</h3>
-        <p class="muted">Sin datos.</p>
-      </section>
+        <p style="color: var(--color-text-secondary); font-style: italic;">Sin datos disponibles.</p>
+      </div>
     `;
   }
 
   const listHtml = items
     .map((item) => {
-      if (typeof item === "string") return `<li>${escapeHtml(item)}</li>`;
+      if (typeof item === "string") {
+        return `<li class="result-item">${escapeHtml(item)}</li>`;
+      }
 
       if (item && typeof item === "object") {
         const lines = Object.entries(item).map(([k, v]) => {
           const isUrl = typeof v === "string" && /^https?:\/\//i.test(v);
-          return `<div><strong>${escapeHtml(k)}:</strong> ${
-            isUrl ? asLink(v) : escapeHtml(v)
-          }</div>`;
+          const valueHtml = isUrl 
+            ? `<a href="${escapeHtml(v)}" target="_blank" rel="noopener noreferrer">🔗 Ver enlace</a>`
+            : `<span>${escapeHtml(v)}</span>`;
+          return `<div style="margin-bottom: 0.5rem;"><strong>${escapeHtml(k)}:</strong> ${valueHtml}</div>`;
         });
-        return `<li>${lines.join("")}</li>`;
+        return `<li class="result-item">${lines.join("")}</li>`;
       }
 
-      return `<li>${escapeHtml(item)}</li>`;
+      return `<li class="result-item">${escapeHtml(item)}</li>`;
     })
     .join("");
 
   return `
-    <section class="card">
+    <div class="result-card">
       <h3>${escapeHtml(title)}</h3>
-      <ul>${listHtml}</ul>
-    </section>
+      <ul class="result-list">${listHtml}</ul>
+    </div>
   `;
 }
 
 function renderResponse(data) {
   if (!resultsEl) return;
 
-  const summary = data?.summary ?? "Sin resumen.";
+  const summary = data?.summary ?? "Sin resumen disponible.";
   const flights = data?.flights ?? [];
   const hotels = data?.hotels ?? [];
   const itinerary = data?.itinerary ?? [];
 
   resultsEl.innerHTML = `
-    <section class="card">
-      <h3>Resumen</h3>
-      <p>${escapeHtml(summary)}</p>
-    </section>
-    ${renderList("Vuelos", flights)}
-    ${renderList("Hoteles", hotels)}
-    ${renderList("Itinerario", itinerary)}
+    <div class="result-card" style="animation-delay: 0ms;">
+      <h3>📋 Resumen</h3>
+      <div class="result-summary">${escapeHtml(summary)}</div>
+    </div>
+    ${renderList("✈️ Vuelos", flights)}
+    ${renderList("🏨 Hoteles", hotels)}
+    ${renderList("🗺️ Itinerario", itinerary)}
   `;
+
+  // Añadir animación staggered a los cards de resultados
+  const resultCards = resultsEl.querySelectorAll(".result-card");
+  resultCards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 100}ms`;
+  });
 }
 
 form?.addEventListener("submit", async (e) => {
