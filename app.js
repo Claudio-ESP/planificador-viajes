@@ -46,12 +46,29 @@ function renderFlights(flights, isOneWay = false) {
     `;
   }
 
+  // Debug: ver estructura del primer vuelo
+  console.log('🔍 DEBUG - Estructura de flights[0]:', flights[0]);
+
   // Etiquetas para cada opción
   const badges = [
     { text: "👍 Más barata", color: "#28a745" },
     { text: "⭐ Mejor opción", color: "#0066cc" },
     { text: "🔄 Más flexible", color: "#ff9800" }
   ];
+
+  // Mapeo de nombres de propiedades a labels bonitos
+  const urlLabels = {
+    skyscannerUrl: { label: 'Skyscanner', class: 'btn-skyscanner' },
+    skyscanner_url: { label: 'Skyscanner', class: 'btn-skyscanner' },
+    kayakUrl: { label: 'KAYAK', class: 'btn-kayak' },
+    kayak_url: { label: 'KAYAK', class: 'btn-kayak' },
+    momondoUrl: { label: 'Momondo', class: 'btn-momondo' },
+    momondo_url: { label: 'Momondo', class: 'btn-momondo' },
+    googleUrl: { label: 'Google Flights', class: 'btn-google' },
+    google_url: { label: 'Google Flights', class: 'btn-google' },
+    link: { label: 'Ver vuelo', class: 'btn-view' },
+    url: { label: 'Ver vuelo', class: 'btn-view' }
+  };
 
   const flightsHtml = flights
     .map((flight, index) => {
@@ -63,9 +80,26 @@ function renderFlights(flights, isOneWay = false) {
         const title = flight.title || flight.name || flight.airline || "Vuelo";
         const price = flight.price || flight.cost || "";
         
-        // Detectar los enlaces de Skyscanner y KAYAK
-        const skyscannerUrl = flight.skyscannerUrl || flight.skyscanner_url || "";
-        const kayakUrl = flight.kayakUrl || flight.kayak_url || "";
+        // Crear array dinámico de enlaces disponibles
+        const flightLinks = [];
+        
+        // Buscar todas las propiedades que contengan URLs
+        Object.keys(flight).forEach(key => {
+          const value = flight[key];
+          // Verificar si es una URL (string que empieza con http)
+          if (typeof value === 'string' && value.startsWith('http')) {
+            const config = urlLabels[key] || { 
+              label: key.replace(/url|Url|_url/gi, '').charAt(0).toUpperCase() + key.replace(/url|Url|_url/gi, '').slice(1),
+              class: 'btn-view'
+            };
+            
+            flightLinks.push({
+              label: config.label,
+              url: value,
+              cssClass: config.class
+            });
+          }
+        });
         
         const details = [];
 
@@ -87,14 +121,12 @@ function renderFlights(flights, isOneWay = false) {
         const badge = badges[index] || null;
         const badgeHtml = badge ? `<span class="option-badge" style="background: ${badge.color};">${badge.text}</span>` : '';
 
-        // Construir botones de enlaces
-        const buttons = [];
-        if (skyscannerUrl) {
-          buttons.push(`<a href="${escapeHtml(skyscannerUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-skyscanner">Skyscanner</a>`);
-        }
-        if (kayakUrl) {
-          buttons.push(`<a href="${escapeHtml(kayakUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-kayak">KAYAK</a>`);
-        }
+        // Construir botones de enlaces dinámicamente
+        const buttonsHtml = flightLinks.length > 0 
+          ? flightLinks.map(link => 
+              `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="btn-view ${link.cssClass}">${escapeHtml(link.label)}</a>`
+            ).join('')
+          : '<p style="color: var(--color-text-tertiary); font-size: 0.875rem; font-style: italic;">No hay enlaces disponibles</p>';
 
         return `
           <li class="result-item">
@@ -104,7 +136,7 @@ function renderFlights(flights, isOneWay = false) {
               ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} €</div>` : ''}
               ${details.length > 0 ? `<div style="margin-bottom: 0.75rem; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${details.join(' • ')}</div>` : ''}
             </div>
-            ${buttons.length > 0 ? `<div class="flight-buttons">${buttons.join('')}</div>` : '<p style="color: var(--color-text-tertiary); font-size: 0.875rem; font-style: italic;">No hay enlaces disponibles</p>'}
+            <div class="flight-buttons">${buttonsHtml}</div>
           </li>
         `;
       }
