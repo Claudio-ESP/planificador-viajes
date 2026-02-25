@@ -144,7 +144,7 @@ function renderHotels(hotels) {
   `;
 }
 
-// Renderizar itinerario con formato profesional
+// Renderizar itinerario con formato profesional tipo timeline
 function renderItinerary(itinerary) {
   if (!Array.isArray(itinerary) || itinerary.length === 0) {
     return `
@@ -158,44 +158,80 @@ function renderItinerary(itinerary) {
   const itineraryHtml = itinerary
     .map((day, index) => {
       if (typeof day === "string") {
-        return `<li class="result-item">${escapeHtml(day)}</li>`;
+        return `<div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">${escapeHtml(day)}</div>
+        </div>`;
       }
 
       if (day && typeof day === "object") {
-        const dayTitle = day.day || day.title || day.name || `Día ${index + 1}`;
-        const activities = day.activities || day.places || day.itinerary || [];
+        // Extraer campos del objeto
+        const dayDate = day.day || "";
+        const dayTitle = day.title || day.name || "";
+        const dayDescription = day.description || day.desc || "";
         
+        // Buscar actividades en múltiples campos posibles: items, activities, places, itinerary
+        const activities = day.items || day.activities || day.places || day.itinerary || [];
+        
+        // Formatear fecha si existe
+        let formattedDate = "";
+        if (dayDate) {
+          try {
+            const dateObj = new Date(dayDate);
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            formattedDate = dateObj.toLocaleDateString('es-ES', options);
+          } catch {
+            formattedDate = dayDate;
+          }
+        }
+        
+        // Construir título del día
+        let dayHeader = "";
+        if (formattedDate && dayTitle) {
+          dayHeader = `📅 ${escapeHtml(formattedDate)} - ${escapeHtml(dayTitle)}`;
+        } else if (formattedDate) {
+          dayHeader = `📅 ${escapeHtml(formattedDate)}`;
+        } else if (dayTitle) {
+          dayHeader = `📅 ${escapeHtml(dayTitle)}`;
+        } else {
+          dayHeader = `📅 Día ${index + 1}`;
+        }
+        
+        // Renderizar actividades
         let activitiesHtml = "";
-        if (Array.isArray(activities)) {
+        if (Array.isArray(activities) && activities.length > 0) {
           activitiesHtml = `
-            <ul style="margin: 0.75rem 0 0 1.25rem; list-style: disc; color: var(--color-text-secondary);">
-              ${activities.map(act => `<li style="margin-bottom: 0.5rem;">${escapeHtml(act)}</li>`).join('')}
+            <ul class="timeline-activities">
+              ${activities.map(act => `<li>${escapeHtml(act)}</li>`).join('')}
             </ul>
           `;
         } else if (typeof activities === "string") {
-          activitiesHtml = `<p style="margin-top: 0.5rem; color: var(--color-text-secondary);">${escapeHtml(activities)}</p>`;
+          activitiesHtml = `<div class="timeline-activities-text">${escapeHtml(activities)}</div>`;
         }
 
-        // Detectar otros campos interesantes
-        const description = day.description || day.desc || "";
-
         return `
-          <li class="result-item">
-            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">📅 ${escapeHtml(dayTitle)}</h4>
-            ${description ? `<p style="margin-bottom: 0.5rem; color: var(--color-text);">${escapeHtml(description)}</p>` : ''}
-            ${activitiesHtml}
-          </li>
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <h4 class="timeline-title">${dayHeader}</h4>
+              ${dayDescription ? `<p class="timeline-description">${escapeHtml(dayDescription)}</p>` : ''}
+              ${activitiesHtml}
+            </div>
+          </div>
         `;
       }
 
-      return `<li class="result-item">${escapeHtml(day)}</li>`;
+      return `<div class="timeline-item">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">${escapeHtml(day)}</div>
+      </div>`;
     })
     .join("");
 
   return `
     <div class="result-card">
       <h3>🗺️ Itinerario</h3>
-      <ul class="result-list">${itineraryHtml}</ul>
+      <div class="timeline">${itineraryHtml}</div>
     </div>
   `;
 }
