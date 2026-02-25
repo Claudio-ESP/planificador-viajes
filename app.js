@@ -36,7 +36,7 @@ function asLink(url) {
 }
 
 // Renderizar vuelos con formato profesional
-function renderFlights(flights) {
+function renderFlights(flights, isOneWay = false) {
   if (!Array.isArray(flights) || flights.length === 0) {
     return `
       <div class="result-card">
@@ -58,6 +58,11 @@ function renderFlights(flights) {
         const link = flight.link || flight.url || "";
         const details = [];
 
+        // Añadir badge "Solo ida" si es relevante
+        if (isOneWay) {
+          details.push(`<span style="background: var(--color-warning); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">➡️ Solo ida</span>`);
+        }
+
         // Añadir detalles adicionales si existen
         if (flight.departure) details.push(`🛫 ${escapeHtml(flight.departure)}`);
         if (flight.arrival) details.push(`🛬 ${escapeHtml(flight.arrival)}`);
@@ -72,7 +77,7 @@ function renderFlights(flights) {
             <div style="margin-bottom: 0.75rem;">
               <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(title)}</h4>
               ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)}</div>` : ''}
-              ${details.length > 0 ? `<div style="margin-bottom: 0.5rem; color: var(--color-text-secondary);">${details.join(' • ')}</div>` : ''}
+              ${details.length > 0 ? `<div style="margin-bottom: 0.5rem; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${details.join(' • ')}</div>` : ''}
             </div>
             ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="btn-view">✈️ Ver vuelo</a>` : ''}
           </li>
@@ -85,7 +90,7 @@ function renderFlights(flights) {
 
   return `
     <div class="result-card">
-      <h3>✈️ Vuelos</h3>
+      <h3>✈️ Vuelos${isOneWay ? ' <span style="font-size: 0.875rem; color: var(--color-warning); font-weight: normal;">(➡️ Solo ida)</span>' : ''}</h3>
       <ul class="result-list">${flightsHtml}</ul>
     </div>
   `;
@@ -236,7 +241,7 @@ function renderItinerary(itinerary) {
   `;
 }
 
-function renderResponse(data) {
+function renderResponse(data, isOneWay = false) {
   if (!resultsEl) return;
 
   const summary = data?.summary ?? "Sin resumen disponible.";
@@ -244,12 +249,18 @@ function renderResponse(data) {
   const hotels = data?.hotels ?? [];
   const itinerary = data?.itinerary ?? [];
 
+  // Añadir nota de "Solo ida" al resumen si aplica
+  let summaryText = escapeHtml(summary);
+  if (isOneWay && !summary.toLowerCase().includes('solo ida')) {
+    summaryText += `<div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--color-warning); color: white; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">➡️ Viaje de solo ida</div>`;
+  }
+
   resultsEl.innerHTML = `
     <div class="result-card" style="animation-delay: 0ms;">
       <h3>📋 Resumen</h3>
-      <div class="result-summary">${escapeHtml(summary)}</div>
+      <div class="result-summary">${summaryText}</div>
     </div>
-    ${renderFlights(flights)}
+    ${renderFlights(flights, isOneWay)}
     ${renderHotels(hotels)}
     ${renderItinerary(itinerary)}
   `;
@@ -310,7 +321,11 @@ form?.addEventListener("submit", async (e) => {
     }
 
     const data = await response.json();
-    renderResponse(data);
+    
+    // Detectar si es viaje de solo ida
+    const isOneWay = !fechaVuelta || fechaVuelta.trim() === "";
+    
+    renderResponse(data, isOneWay);
   } catch (err) {
     setError("No se pudo obtener el plan. Intenta nuevamente.");
   } finally {
