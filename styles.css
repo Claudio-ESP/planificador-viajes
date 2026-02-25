@@ -479,6 +479,38 @@ body {
   transform: translateX(2px);
 }
 
+/* Contenedor de botones de vuelo */
+.flight-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* Botón Google */
+.btn-google {
+  background: #4285F4;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-google:hover {
+  background: #2c6dd4;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón Skyscanner */
+.btn-skyscanner {
+  background: #00AFF5;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-skyscanner:hover {
+  background: #0095d4;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 /* ============================================
    ALERTS
    ============================================ */

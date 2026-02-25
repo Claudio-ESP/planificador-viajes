@@ -55,7 +55,12 @@ function renderFlights(flights, isOneWay = false) {
       if (flight && typeof flight === "object") {
         const title = flight.title || flight.name || flight.airline || "Vuelo";
         const price = flight.price || flight.cost || "";
-        const link = flight.link || flight.url || "";
+        
+        // Detectar los 3 tipos de links
+        const linkGoogle1 = flight.linkGoogle1 || flight.link_google1 || "";
+        const linkGoogle2 = flight.linkGoogle2 || flight.link_google2 || "";
+        const linkSkyscanner = flight.linkSkyscanner || flight.link_skyscanner || "";
+        
         const details = [];
 
         // Añadir badge "Solo ida" si es relevante
@@ -72,14 +77,26 @@ function renderFlights(flights, isOneWay = false) {
           details.push(`🔄 ${stopsText}`);
         }
 
+        // Construir botones de enlaces
+        const buttons = [];
+        if (linkGoogle1) {
+          buttons.push(`<a href="${escapeHtml(linkGoogle1)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-google">Google (1)</a>`);
+        }
+        if (linkGoogle2) {
+          buttons.push(`<a href="${escapeHtml(linkGoogle2)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-google">Google (2)</a>`);
+        }
+        if (linkSkyscanner) {
+          buttons.push(`<a href="${escapeHtml(linkSkyscanner)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-skyscanner">Skyscanner</a>`);
+        }
+
         return `
           <li class="result-item">
             <div style="margin-bottom: 0.75rem;">
               <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(title)}</h4>
               ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)}</div>` : ''}
-              ${details.length > 0 ? `<div style="margin-bottom: 0.5rem; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${details.join(' • ')}</div>` : ''}
+              ${details.length > 0 ? `<div style="margin-bottom: 0.75rem; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${details.join(' • ')}</div>` : ''}
             </div>
-            ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="btn-view">✈️ Ver vuelo</a>` : ''}
+            ${buttons.length > 0 ? `<div class="flight-buttons">${buttons.join('')}</div>` : '<p style="color: var(--color-text-tertiary); font-size: 0.875rem; font-style: italic;">No hay enlaces disponibles</p>'}
           </li>
         `;
       }
