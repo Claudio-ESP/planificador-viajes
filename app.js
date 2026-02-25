@@ -268,6 +268,38 @@ function renderHotels(hotels, tripData = {}) {
 }
 
 // Renderizar itinerario con formato profesional tipo timeline
+// Formatear fecha del itinerario de forma segura
+function formatDay(dayStr, index) {
+  if (!dayStr || typeof dayStr !== 'string') {
+    return `Día ${index + 1}`;
+  }
+  
+  // Parsear manualmente "YYYY-MM-DD" para evitar problemas de timezone
+  const parts = dayStr.trim().split('-');
+  if (parts.length !== 3) {
+    return `Día ${index + 1}`;
+  }
+  
+  const [year, month, day] = parts.map(Number);
+  
+  // Validar que sean números válidos
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return `Día ${index + 1}`;
+  }
+  
+  // Crear fecha (mes es 0-indexed, por eso month-1)
+  const dateObj = new Date(year, month - 1, day);
+  
+  // Verificar que la fecha sea válida
+  if (isNaN(dateObj.getTime())) {
+    return `Día ${index + 1}`;
+  }
+  
+  // Formatear a "26 feb 2026"
+  const options = { day: 'numeric', month: 'short', year: 'numeric' };
+  return dateObj.toLocaleDateString('es-ES', options);
+}
+
 function renderItinerary(itinerary) {
   if (!Array.isArray(itinerary) || itinerary.length === 0) {
     return `
@@ -296,28 +328,15 @@ function renderItinerary(itinerary) {
         // Buscar actividades en múltiples campos posibles: items, activities, places, itinerary
         const activities = day.items || day.activities || day.places || day.itinerary || [];
         
-        // Formatear fecha si existe
-        let formattedDate = "";
-        if (dayDate) {
-          try {
-            const dateObj = new Date(dayDate);
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            formattedDate = dateObj.toLocaleDateString('es-ES', options);
-          } catch {
-            formattedDate = dayDate;
-          }
-        }
+        // Formatear fecha usando función segura
+        const formattedDate = formatDay(dayDate, index);
         
         // Construir título del día
         let dayHeader = "";
-        if (formattedDate && dayTitle) {
+        if (dayTitle) {
           dayHeader = `📅 ${escapeHtml(formattedDate)} - ${escapeHtml(dayTitle)}`;
-        } else if (formattedDate) {
-          dayHeader = `📅 ${escapeHtml(formattedDate)}`;
-        } else if (dayTitle) {
-          dayHeader = `📅 ${escapeHtml(dayTitle)}`;
         } else {
-          dayHeader = `📅 Día ${index + 1}`;
+          dayHeader = `📅 ${escapeHtml(formattedDate)}`;
         }
         
         // Renderizar actividades

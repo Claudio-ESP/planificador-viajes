@@ -314,11 +314,30 @@ body {
   gap: var(--spacing-sm);
 }
 
+/* Resetear estilos de fieldset para eliminar borde blanco */
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: auto;
+}
+
+fieldset.form-group {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
 .form-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   text-transform: none;
+}
+
+legend.form-label {
+  padding: 0;
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Inputs y Selects */
