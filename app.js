@@ -46,8 +46,15 @@ function renderFlights(flights, isOneWay = false) {
     `;
   }
 
+  // Etiquetas para cada opción
+  const badges = [
+    { text: "👍 Más barata", color: "#28a745" },
+    { text: "⭐ Mejor opción", color: "#0066cc" },
+    { text: "🔄 Más flexible", color: "#ff9800" }
+  ];
+
   const flightsHtml = flights
-    .map((flight) => {
+    .map((flight, index) => {
       if (typeof flight === "string") {
         return `<li class="result-item">${escapeHtml(flight)}</li>`;
       }
@@ -56,10 +63,9 @@ function renderFlights(flights, isOneWay = false) {
         const title = flight.title || flight.name || flight.airline || "Vuelo";
         const price = flight.price || flight.cost || "";
         
-        // Detectar los 3 tipos de links
-        const linkGoogle1 = flight.linkGoogle1 || flight.link_google1 || "";
-        const linkGoogle2 = flight.linkGoogle2 || flight.link_google2 || "";
-        const linkSkyscanner = flight.linkSkyscanner || flight.link_skyscanner || "";
+        // Detectar los enlaces de Skyscanner y KAYAK
+        const skyscannerUrl = flight.skyscannerUrl || flight.skyscanner_url || "";
+        const kayakUrl = flight.kayakUrl || flight.kayak_url || "";
         
         const details = [];
 
@@ -77,23 +83,25 @@ function renderFlights(flights, isOneWay = false) {
           details.push(`🔄 ${stopsText}`);
         }
 
+        // Badge de opción (Más barata, Mejor opción, etc.)
+        const badge = badges[index] || null;
+        const badgeHtml = badge ? `<span class="option-badge" style="background: ${badge.color};">${badge.text}</span>` : '';
+
         // Construir botones de enlaces
         const buttons = [];
-        if (linkGoogle1) {
-          buttons.push(`<a href="${escapeHtml(linkGoogle1)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-google">Google (1)</a>`);
+        if (skyscannerUrl) {
+          buttons.push(`<a href="${escapeHtml(skyscannerUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-skyscanner">Skyscanner</a>`);
         }
-        if (linkGoogle2) {
-          buttons.push(`<a href="${escapeHtml(linkGoogle2)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-google">Google (2)</a>`);
-        }
-        if (linkSkyscanner) {
-          buttons.push(`<a href="${escapeHtml(linkSkyscanner)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-skyscanner">Skyscanner</a>`);
+        if (kayakUrl) {
+          buttons.push(`<a href="${escapeHtml(kayakUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-kayak">KAYAK</a>`);
         }
 
         return `
           <li class="result-item">
+            ${badgeHtml}
             <div style="margin-bottom: 0.75rem;">
               <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(title)}</h4>
-              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)}</div>` : ''}
+              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} €</div>` : ''}
               ${details.length > 0 ? `<div style="margin-bottom: 0.75rem; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${details.join(' • ')}</div>` : ''}
             </div>
             ${buttons.length > 0 ? `<div class="flight-buttons">${buttons.join('')}</div>` : '<p style="color: var(--color-text-tertiary); font-size: 0.875rem; font-style: italic;">No hay enlaces disponibles</p>'}
@@ -124,8 +132,15 @@ function renderHotels(hotels) {
     `;
   }
 
+  // Etiquetas para cada opción
+  const badges = [
+    { text: "💰 Económico", color: "#28a745" },
+    { text: "⭐ Mejor valorado", color: "#0066cc" },
+    { text: "💎 Premium", color: "#9c27b0" }
+  ];
+
   const hotelsHtml = hotels
-    .map((hotel) => {
+    .map((hotel, index) => {
       if (typeof hotel === "string") {
         return `<li class="result-item">${escapeHtml(hotel)}</li>`;
       }
@@ -133,7 +148,12 @@ function renderHotels(hotels) {
       if (hotel && typeof hotel === "object") {
         const name = hotel.name || hotel.title || hotel.hotelName || "Hotel";
         const price = hotel.price || hotel.pricePerNight || hotel.cost || "";
-        const link = hotel.link || hotel.url || "";
+        
+        // Detectar los enlaces de Booking, Airbnb y Hotels.com
+        const bookingUrl = hotel.bookingUrl || hotel.booking_url || "";
+        const airbnbUrl = hotel.airbnbUrl || hotel.airbnb_url || "";
+        const hotelsUrl = hotel.hotelsUrl || hotel.hotels_url || "";
+        
         const details = [];
 
         // Añadir detalles adicionales si existen
@@ -142,14 +162,31 @@ function renderHotels(hotels) {
         if (hotel.address) details.push(`📍 ${escapeHtml(hotel.address)}`);
         if (hotel.stars) details.push(`${'⭐'.repeat(parseInt(hotel.stars))}`);
 
+        // Badge de opción (Económico, Mejor valorado, etc.)
+        const badge = badges[index] || null;
+        const badgeHtml = badge ? `<span class="option-badge" style="background: ${badge.color};">${badge.text}</span>` : '';
+
+        // Construir botones de enlaces
+        const buttons = [];
+        if (bookingUrl) {
+          buttons.push(`<a href="${escapeHtml(bookingUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-booking">Booking</a>`);
+        }
+        if (airbnbUrl) {
+          buttons.push(`<a href="${escapeHtml(airbnbUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-airbnb">Airbnb</a>`);
+        }
+        if (hotelsUrl) {
+          buttons.push(`<a href="${escapeHtml(hotelsUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view btn-hotels">Hotels.com</a>`);
+        }
+
         return `
           <li class="result-item">
+            ${badgeHtml}
             <div style="margin-bottom: 0.75rem;">
               <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(name)}</h4>
-              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)}/noche</div>` : ''}
-              ${details.length > 0 ? `<div style="margin-bottom: 0.5rem; color: var(--color-text-secondary);">${details.join(' • ')}</div>` : ''}
+              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} € / noche</div>` : ''}
+              ${details.length > 0 ? `<div style="margin-bottom: 0.75rem; color: var(--color-text-secondary);">${details.join(' • ')}</div>` : ''}
             </div>
-            ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="btn-view">🏨 Ver hotel</a>` : ''}
+            ${buttons.length > 0 ? `<div class="flight-buttons">${buttons.join('')}</div>` : '<p style="color: var(--color-text-tertiary); font-size: 0.875rem; font-style: italic;">No hay enlaces disponibles</p>'}
           </li>
         `;
       }

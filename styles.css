@@ -479,7 +479,7 @@ body {
   transform: translateX(2px);
 }
 
-/* Contenedor de botones de vuelo */
+/* Contenedor de botones de vuelo y hoteles */
 .flight-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -487,17 +487,21 @@ body {
   align-items: center;
 }
 
-/* Botón Google */
-.btn-google {
-  background: #4285F4;
-  font-weight: var(--font-weight-semibold);
+/* Badges de opciones (Más barata, Mejor opción, etc.) */
+.option-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-google:hover {
-  background: #2c6dd4;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
+/* ========== BOTONES DE VUELOS ========== */
 
 /* Botón Skyscanner */
 .btn-skyscanner {
@@ -507,6 +511,56 @@ body {
 
 .btn-skyscanner:hover {
   background: #0095d4;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón KAYAK */
+.btn-kayak {
+  background: #FF6600;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-kayak:hover {
+  background: #e65c00;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ========== BOTONES DE HOTELES ========== */
+
+/* Botón Booking */
+.btn-booking {
+  background: #003580;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-booking:hover {
+  background: #002659;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón Airbnb */
+.btn-airbnb {
+  background: #FF5A5F;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-airbnb:hover {
+  background: #e64b50;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón Hotels.com */
+.btn-hotels {
+  background: #D32F2F;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-hotels:hover {
+  background: #b92828;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
