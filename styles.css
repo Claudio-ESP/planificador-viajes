@@ -353,6 +353,15 @@ body {
   color: var(--color-text-tertiary);
 }
 
+.form-helper {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-xs);
+  line-height: var(--line-height-relaxed);
+  font-style: italic;
+}
+
 /* Checkboxes estilizadas */
 .checkbox-grid {
   display: grid;
