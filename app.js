@@ -35,41 +35,167 @@ function asLink(url) {
   return `<a href="${safe}" target="_blank" rel="noopener noreferrer">${safe}</a>`;
 }
 
-function renderList(title, items) {
-  if (!Array.isArray(items) || items.length === 0) {
+// Renderizar vuelos con formato profesional
+function renderFlights(flights) {
+  if (!Array.isArray(flights) || flights.length === 0) {
     return `
       <div class="result-card">
-        <h3>${escapeHtml(title)}</h3>
-        <p style="color: var(--color-text-secondary); font-style: italic;">Sin datos disponibles.</p>
+        <h3>✈️ Vuelos</h3>
+        <p style="color: var(--color-text-secondary); font-style: italic;">No se encontraron vuelos disponibles.</p>
       </div>
     `;
   }
 
-  const listHtml = items
-    .map((item) => {
-      if (typeof item === "string") {
-        return `<li class="result-item">${escapeHtml(item)}</li>`;
+  const flightsHtml = flights
+    .map((flight) => {
+      if (typeof flight === "string") {
+        return `<li class="result-item">${escapeHtml(flight)}</li>`;
       }
 
-      if (item && typeof item === "object") {
-        const lines = Object.entries(item).map(([k, v]) => {
-          const isUrl = typeof v === "string" && /^https?:\/\//i.test(v);
-          const valueHtml = isUrl 
-            ? `<a href="${escapeHtml(v)}" target="_blank" rel="noopener noreferrer">🔗 Ver enlace</a>`
-            : `<span>${escapeHtml(v)}</span>`;
-          return `<div style="margin-bottom: 0.5rem;"><strong>${escapeHtml(k)}:</strong> ${valueHtml}</div>`;
-        });
-        return `<li class="result-item">${lines.join("")}</li>`;
+      if (flight && typeof flight === "object") {
+        const title = flight.title || flight.name || flight.airline || "Vuelo";
+        const price = flight.price || flight.cost || "";
+        const link = flight.link || flight.url || "";
+        const details = [];
+
+        // Añadir detalles adicionales si existen
+        if (flight.departure) details.push(`🛫 ${escapeHtml(flight.departure)}`);
+        if (flight.arrival) details.push(`🛬 ${escapeHtml(flight.arrival)}`);
+        if (flight.duration) details.push(`⏱️ ${escapeHtml(flight.duration)}`);
+        if (flight.stops !== undefined) {
+          const stopsText = flight.stops == 0 ? "Directo" : `${flight.stops} escala${flight.stops > 1 ? 's' : ''}`;
+          details.push(`🔄 ${stopsText}`);
+        }
+
+        return `
+          <li class="result-item">
+            <div style="margin-bottom: 0.75rem;">
+              <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(title)}</h4>
+              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)}</div>` : ''}
+              ${details.length > 0 ? `<div style="margin-bottom: 0.5rem; color: var(--color-text-secondary);">${details.join(' • ')}</div>` : ''}
+            </div>
+            ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="btn-view">✈️ Ver vuelo</a>` : ''}
+          </li>
+        `;
       }
 
-      return `<li class="result-item">${escapeHtml(item)}</li>`;
+      return `<li class="result-item">${escapeHtml(flight)}</li>`;
     })
     .join("");
 
   return `
     <div class="result-card">
-      <h3>${escapeHtml(title)}</h3>
-      <ul class="result-list">${listHtml}</ul>
+      <h3>✈️ Vuelos</h3>
+      <ul class="result-list">${flightsHtml}</ul>
+    </div>
+  `;
+}
+
+// Renderizar hoteles con formato profesional
+function renderHotels(hotels) {
+  if (!Array.isArray(hotels) || hotels.length === 0) {
+    return `
+      <div class="result-card">
+        <h3>🏨 Hoteles</h3>
+        <p style="color: var(--color-text-secondary); font-style: italic;">No se encontraron hoteles disponibles.</p>
+      </div>
+    `;
+  }
+
+  const hotelsHtml = hotels
+    .map((hotel) => {
+      if (typeof hotel === "string") {
+        return `<li class="result-item">${escapeHtml(hotel)}</li>`;
+      }
+
+      if (hotel && typeof hotel === "object") {
+        const name = hotel.name || hotel.title || hotel.hotelName || "Hotel";
+        const price = hotel.price || hotel.pricePerNight || hotel.cost || "";
+        const link = hotel.link || hotel.url || "";
+        const details = [];
+
+        // Añadir detalles adicionales si existen
+        if (hotel.rating) details.push(`⭐ ${escapeHtml(hotel.rating)}`);
+        if (hotel.distance) details.push(`📍 ${escapeHtml(hotel.distance)}`);
+        if (hotel.address) details.push(`📍 ${escapeHtml(hotel.address)}`);
+        if (hotel.stars) details.push(`${'⭐'.repeat(parseInt(hotel.stars))}`);
+
+        return `
+          <li class="result-item">
+            <div style="margin-bottom: 0.75rem;">
+              <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(name)}</h4>
+              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)}/noche</div>` : ''}
+              ${details.length > 0 ? `<div style="margin-bottom: 0.5rem; color: var(--color-text-secondary);">${details.join(' • ')}</div>` : ''}
+            </div>
+            ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="btn-view">🏨 Ver hotel</a>` : ''}
+          </li>
+        `;
+      }
+
+      return `<li class="result-item">${escapeHtml(hotel)}</li>`;
+    })
+    .join("");
+
+  return `
+    <div class="result-card">
+      <h3>🏨 Hoteles</h3>
+      <ul class="result-list">${hotelsHtml}</ul>
+    </div>
+  `;
+}
+
+// Renderizar itinerario con formato profesional
+function renderItinerary(itinerary) {
+  if (!Array.isArray(itinerary) || itinerary.length === 0) {
+    return `
+      <div class="result-card">
+        <h3>🗺️ Itinerario</h3>
+        <p style="color: var(--color-text-secondary); font-style: italic;">No se generó itinerario.</p>
+      </div>
+    `;
+  }
+
+  const itineraryHtml = itinerary
+    .map((day, index) => {
+      if (typeof day === "string") {
+        return `<li class="result-item">${escapeHtml(day)}</li>`;
+      }
+
+      if (day && typeof day === "object") {
+        const dayTitle = day.day || day.title || day.name || `Día ${index + 1}`;
+        const activities = day.activities || day.places || day.itinerary || [];
+        
+        let activitiesHtml = "";
+        if (Array.isArray(activities)) {
+          activitiesHtml = `
+            <ul style="margin: 0.75rem 0 0 1.25rem; list-style: disc; color: var(--color-text-secondary);">
+              ${activities.map(act => `<li style="margin-bottom: 0.5rem;">${escapeHtml(act)}</li>`).join('')}
+            </ul>
+          `;
+        } else if (typeof activities === "string") {
+          activitiesHtml = `<p style="margin-top: 0.5rem; color: var(--color-text-secondary);">${escapeHtml(activities)}</p>`;
+        }
+
+        // Detectar otros campos interesantes
+        const description = day.description || day.desc || "";
+
+        return `
+          <li class="result-item">
+            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">📅 ${escapeHtml(dayTitle)}</h4>
+            ${description ? `<p style="margin-bottom: 0.5rem; color: var(--color-text);">${escapeHtml(description)}</p>` : ''}
+            ${activitiesHtml}
+          </li>
+        `;
+      }
+
+      return `<li class="result-item">${escapeHtml(day)}</li>`;
+    })
+    .join("");
+
+  return `
+    <div class="result-card">
+      <h3>🗺️ Itinerario</h3>
+      <ul class="result-list">${itineraryHtml}</ul>
     </div>
   `;
 }
@@ -87,9 +213,9 @@ function renderResponse(data) {
       <h3>📋 Resumen</h3>
       <div class="result-summary">${escapeHtml(summary)}</div>
     </div>
-    ${renderList("✈️ Vuelos", flights)}
-    ${renderList("🏨 Hoteles", hotels)}
-    ${renderList("🗺️ Itinerario", itinerary)}
+    ${renderFlights(flights)}
+    ${renderHotels(hotels)}
+    ${renderItinerary(itinerary)}
   `;
 
   // Añadir animación staggered a los cards de resultados
