@@ -35,6 +35,37 @@ function asLink(url) {
   return `<a href="${safe}" target="_blank" rel="noopener noreferrer">${safe}</a>`;
 }
 
+// Calcular precio total de una lista de items
+function calculateTotalPrice(items) {
+  if (!Array.isArray(items)) return 0;
+  
+  let total = 0;
+  items.forEach(item => {
+    if (item && typeof item === 'object') {
+      const price = item.price || item.pricePerNight || item.cost || 0;
+      if (price) {
+        const priceNum = typeof price === 'string' 
+          ? parseFloat(price.replace(/[^0-9.]/g, '')) 
+          : price;
+        if (!isNaN(priceNum)) total += priceNum;
+      }
+    }
+  });
+  
+  return total;
+}
+
+// Calcular precio por persona
+function calculatePricePerPerson(totalPrice, numPeople) {
+  if (!numPeople || numPeople < 1) return 0;
+  return (totalPrice / numPeople).toFixed(2);
+}
+
+// Formato de moneda
+function formatCurrency(value) {
+  return parseFloat(value).toFixed(2);
+}
+
 // Obtener badge dinámico según presupuesto
 function getBudgetBadge(budget) {
   if (!budget || budget < 100) {
@@ -181,7 +212,7 @@ function buildHotelsUrl(destino) {
 }
 
 // Renderizar vuelos con formato profesional
-function renderFlights(flights, isOneWay = false, tripData = {}) {
+function renderFlights(flights, isOneWay = false, tripData = {}, numPeople = 1) {
   if (!Array.isArray(flights) || flights.length === 0) {
     return `
       <div class="result-card">
@@ -203,6 +234,18 @@ function renderFlights(flights, isOneWay = false, tripData = {}) {
       if (flight && typeof flight === "object") {
         const title = flight.title || flight.name || flight.airline || "Vuelo";
         const price = flight.price || flight.cost || "";
+        
+        // Calcular precio por persona si hay más de 1
+        let pricePerPersonHtml = "";
+        if (price && numPeople > 1) {
+          const priceNum = typeof price === 'string' 
+            ? parseFloat(price.replace(/[^0-9.]/g, '')) 
+            : price;
+          if (!isNaN(priceNum)) {
+            const pricePerPerson = (priceNum / numPeople).toFixed(2);
+            pricePerPersonHtml = `<div style="font-size: 0.9rem; color: var(--color-text-secondary); margin-top: 0.25rem;">➜ ${pricePerPerson} € / persona ${numPeople > 1 ? `(entre ${numPeople})` : ''}</div>`;
+          }
+        }
         
         // Leer SOLO del nuevo formato: flight.links.skyscanner o flight.links.kayak
         let linkUrl = "";
@@ -241,7 +284,7 @@ function renderFlights(flights, isOneWay = false, tripData = {}) {
           <li class="result-item">
             <div style="margin-bottom: 0.75rem;">
               <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(title)}</h4>
-              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} €</div>` : ''}
+              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} €${pricePerPersonHtml}</div>` : ''}
               ${details.length > 0 ? `<div style="margin-bottom: 0.75rem; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${details.join(' • ')}</div>` : ''}
             </div>
             <div class="flight-buttons">${buttonHtml}</div>
@@ -262,7 +305,7 @@ function renderFlights(flights, isOneWay = false, tripData = {}) {
 }
 
 // Renderizar hoteles con formato profesional
-function renderHotels(hotels, tripData = {}) {
+function renderHotels(hotels, tripData = {}, numPeople = 1) {
   if (!Array.isArray(hotels) || hotels.length === 0) {
     return `
       <div class="result-card">
@@ -283,6 +326,18 @@ function renderHotels(hotels, tripData = {}) {
       if (hotel && typeof hotel === "object") {
         const name = hotel.name || hotel.title || hotel.hotelName || "Hotel";
         const price = hotel.price || hotel.pricePerNight || hotel.cost || "";
+        
+        // Calcular precio por persona si hay más de 1
+        let pricePerPersonHtml = "";
+        if (price && numPeople > 1) {
+          const priceNum = typeof price === 'string' 
+            ? parseFloat(price.replace(/[^0-9.]/g, '')) 
+            : price;
+          if (!isNaN(priceNum)) {
+            const pricePerPerson = (priceNum / numPeople).toFixed(2);
+            pricePerPersonHtml = `<div style="font-size: 0.9rem; color: var(--color-text-secondary); margin-top: 0.25rem;">➜ ${pricePerPerson} € / persona ${numPeople > 1 ? `(entre ${numPeople})` : ''} / noche</div>`;
+          }
+        }
         
         // Leer SOLO del nuevo formato: hotel.links.booking, hotel.links.airbnb, hotel.links.hotels
         let linkUrl = "";
@@ -323,7 +378,7 @@ function renderHotels(hotels, tripData = {}) {
           <li class="result-item">
             <div style="margin-bottom: 0.75rem;">
               <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--color-primary);">${escapeHtml(name)}</h4>
-              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} € / noche</div>` : ''}
+              ${price ? `<div style="font-size: 1.25rem; font-weight: 600; color: var(--color-success); margin-bottom: 0.5rem;">💶 ${escapeHtml(price)} € / noche${pricePerPersonHtml}</div>` : ''}
               ${details.length > 0 ? `<div style="margin-bottom: 0.75rem; color: var(--color-text-secondary);">${details.join(' • ')}</div>` : ''}
             </div>
             <div class="flight-buttons">${buttonHtml}</div>
@@ -454,7 +509,7 @@ function renderItinerary(itinerary) {
   `;
 }
 
-function renderResponse(data, isOneWay = false, tripData = {}) {
+function renderResponse(data, isOneWay = false, tripData = {}, numPeople = 1) {
   if (!resultsEl) return;
 
   const summary = data?.summary ?? "Sin resumen disponible.";
@@ -463,11 +518,24 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
   const itinerary = data?.itinerary ?? [];
   const budget = tripData?.presupuestoMax || null;
 
+  // Convertir numPeople a número si es necesario
+  numPeople = parseInt(numPeople) || 1;
+
   // Añadir nota de "Solo ida" al resumen si aplica
   let summaryText = escapeHtml(summary);
   if (isOneWay && !summary.toLowerCase().includes('solo ida')) {
     summaryText += `<div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--color-warning); color: white; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">➡️ Viaje de solo ida</div>`;
   }
+
+  // Calcular totales
+  const flightsTotal = calculateTotalPrice(flights);
+  const hotelsTotal = calculateTotalPrice(hotels);
+  const activitiesTotal = 0; // Por ahora no tenemos actividades con precio
+
+  // Calcular totales por persona
+  const flightsPP = numPeople > 1 ? (flightsTotal / numPeople).toFixed(2) : flightsTotal.toFixed(2);
+  const hotelsPP = numPeople > 1 ? (hotelsTotal / numPeople).toFixed(2) : hotelsTotal.toFixed(2);
+  const activitiesPP = numPeople > 1 ? (activitiesTotal / numPeople).toFixed(2) : activitiesTotal.toFixed(2);
 
   // Añadir información de presupuesto si existe
   let budgetHtml = '';
@@ -508,6 +576,38 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
     if (remaining && remaining.spent > 0) {
       const remainingColor = remaining.remaining >= 0 ? 'var(--color-success)' : 'var(--color-error)';
       const remainingIcon = remaining.remaining >= 0 ? '✅' : '⚠️';
+      
+      // Información por persona si> 1
+      let personsHtml = '';
+      if (numPeople > 1) {
+        const perPersonBudget = (remaining.budget / numPeople).toFixed(2);
+        const perPersonSpent = (remaining.spent / numPeople).toFixed(2);
+        const perPersonRemaining = (remaining.remaining / numPeople).toFixed(2);
+        
+        personsHtml = `
+          <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">👥 Por persona:</span>
+              <span style="font-style: italic; color: var(--color-text-secondary); font-size: 0.875rem;">entre ${numPeople}</span>
+            </div>
+            <div style="display: grid; gap: 0.5rem; margin-top: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--color-text-secondary); font-size: 0.875rem;">Presupuesto:</span>
+                <span style="font-weight: 600; color: var(--color-primary);">${perPersonBudget} €</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--color-text-secondary); font-size: 0.875rem;">Gastado:</span>
+                <span style="font-weight: 600; color: var(--color-text);">${perPersonSpent} €</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--color-text-secondary); font-size: 0.875rem;">Restante:</span>
+                <span style="font-weight: 700; color: ${remainingColor};">${perPersonRemaining} €</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
       budgetHtml += `
         <div style="margin-top: 1rem; padding: 1rem; background: var(--color-background-secondary); border-radius: 8px; border-left: 4px solid ${remainingColor};">
           <h4 style="margin: 0 0 0.75rem 0; font-size: 0.9rem; color: var(--color-text-secondary);">📊 Resumen financiero</h4>
@@ -524,6 +624,7 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
               <span style="color: var(--color-text-secondary); font-size: 0.875rem;">${remainingIcon} Restante:</span>
               <span style="font-weight: 700; font-size: 1.1rem; color: ${remainingColor};">${remaining.remaining} €</span>
             </div>
+            ${personsHtml}
           </div>
         </div>
       `;
@@ -535,8 +636,8 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
       <h3>📋 Resumen</h3>
       <div class="result-summary">${summaryText}${budgetHtml}</div>
     </div>
-    ${renderFlights(flights, isOneWay, tripData)}
-    ${renderHotels(hotels, tripData)}
+    ${renderFlights(flights, isOneWay, tripData, numPeople)}
+    ${renderHotels(hotels, tripData, numPeople)}
     ${renderItinerary(itinerary)}
   `;
 
@@ -593,6 +694,8 @@ form?.addEventListener("submit", async (e) => {
   const fechaVuelta = document.getElementById("fechaVuelta")?.value ?? "";
   const presupuestoRaw = document.getElementById("presupuestoMax")?.value ?? "";
   const presupuestoMax = presupuestoRaw === "" ? null : Number(presupuestoRaw);
+  const numPeopleRaw = document.getElementById("numPeople")?.value ?? "1";
+  const numPeople = Math.max(1, parseInt(numPeopleRaw) || 1);
   const estilo = document.getElementById("estilo")?.value ?? "";
   const preferencias = Array.from(
     document.querySelectorAll('input[name="preferencias"]:checked')
@@ -618,6 +721,7 @@ form?.addEventListener("submit", async (e) => {
     fechaSalida,
     fechaVuelta,
     presupuestoMax,
+    numPeople,
     estilo,
     preferencias,
     radioCentroKm,
@@ -650,7 +754,7 @@ form?.addEventListener("submit", async (e) => {
       presupuestoMax
     };
     
-    renderResponse(data, isOneWay, tripData);
+    renderResponse(data, isOneWay, tripData, numPeople);
   } catch (err) {
     setError("No se pudo obtener el plan. Intenta nuevamente.");
   } finally {

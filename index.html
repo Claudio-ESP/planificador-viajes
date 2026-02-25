@@ -85,8 +85,8 @@
             </div>
           </div>
 
-          <!-- Presupuesto y Estilo (2 columnas en desktop) -->
-          <div class="form-grid form-grid-2">
+          <!-- Presupuesto, Número de personas y Estilo (3 columnas en desktop) -->
+          <div class="form-grid form-grid-3">
             <div class="form-group">
               <label for="presupuestoMax" class="form-label">Presupuesto máximo (€)</label>
               <input
@@ -99,6 +99,20 @@
               />
               <small id="budgetWarning" style="color: var(--color-error); font-size: 0.875rem; display: none;">⚠️ Presupuesto mínimo: 100 €</small>
               <small id="budgetBadge" style="font-size: 0.875rem; font-weight: 600; display: none;"></small>
+            </div>
+
+            <div class="form-group">
+              <label for="numPeople" class="form-label">Número de personas</label>
+              <input
+                type="number"
+                id="numPeople"
+                name="numPeople"
+                placeholder="1"
+                min="1"
+                value="1"
+                class="form-input"
+              />
+              <small style="color: var(--color-text-tertiary); font-size: 0.875rem;">👥 Para dividir el coste</small>
             </div>
 
             <div class="form-group">
