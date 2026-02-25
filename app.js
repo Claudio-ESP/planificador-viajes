@@ -35,6 +35,82 @@ function asLink(url) {
   return `<a href="${safe}" target="_blank" rel="noopener noreferrer">${safe}</a>`;
 }
 
+// Obtener badge dinámico según presupuesto
+function getBudgetBadge(budget) {
+  if (!budget || budget < 100) {
+    return { text: '', color: '', show: false };
+  }
+  
+  if (budget < 500) {
+    return { 
+      text: '💰 Viaje económico', 
+      color: 'var(--color-success)', 
+      show: true 
+    };
+  } else if (budget <= 1500) {
+    return { 
+      text: '⚖️ Viaje equilibrado', 
+      color: 'var(--color-primary)', 
+      show: true 
+    };
+  } else {
+    return { 
+      text: '💎 Viaje premium', 
+      color: '#9c27b0', 
+      show: true 
+    };
+  }
+}
+
+// Calcular distribución del presupuesto
+function calculateBudgetDistribution(budget) {
+  if (!budget || budget < 100) return null;
+  
+  // Distribución aproximada: 40% vuelos, 35% hotel, 25% actividades
+  const flights = Math.round(budget * 0.40);
+  const hotel = Math.round(budget * 0.35);
+  const activities = budget - flights - hotel; // Resto para actividades
+  
+  return { flights, hotel, activities };
+}
+
+// Calcular presupuesto restante
+function calculateRemainingBudget(budget, flights, hotels) {
+  if (!budget || budget < 100) return null;
+  
+  let spent = 0;
+  
+  // Sumar precios de vuelos (solo los que tienen precio)
+  if (Array.isArray(flights)) {
+    flights.forEach(flight => {
+      if (flight && typeof flight === 'object' && flight.price) {
+        const price = typeof flight.price === 'string' 
+          ? parseFloat(flight.price.replace(/[^0-9.]/g, '')) 
+          : flight.price;
+        if (!isNaN(price)) spent += price;
+      }
+    });
+  }
+  
+  // Sumar precios de hoteles (solo los que tienen precio)
+  if (Array.isArray(hotels)) {
+    hotels.forEach(hotel => {
+      if (hotel && typeof hotel === 'object' && hotel.price) {
+        const price = typeof hotel.price === 'string' 
+          ? parseFloat(hotel.price.replace(/[^0-9.]/g, '')) 
+          : hotel.price;
+        if (!isNaN(price)) spent += price;
+      }
+    });
+  }
+  
+  return {
+    budget,
+    spent: Math.round(spent),
+    remaining: Math.round(budget - spent)
+  };
+}
+
 // Extraer código IATA de "Ciudad (IATA)" o usar las primeras 3 letras
 function extractIATA(text) {
   if (!text) return "";
@@ -385,6 +461,7 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
   const flights = data?.flights ?? [];
   const hotels = data?.hotels ?? [];
   const itinerary = data?.itinerary ?? [];
+  const budget = tripData?.presupuestoMax || null;
 
   // Añadir nota de "Solo ida" al resumen si aplica
   let summaryText = escapeHtml(summary);
@@ -392,10 +469,71 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
     summaryText += `<div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--color-warning); color: white; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">➡️ Viaje de solo ida</div>`;
   }
 
+  // Añadir información de presupuesto si existe
+  let budgetHtml = '';
+  if (budget && budget >= 100) {
+    const badge = getBudgetBadge(budget);
+    const distribution = calculateBudgetDistribution(budget);
+    const remaining = calculateRemainingBudget(budget, flights, hotels);
+    
+    // Badge del tipo de viaje
+    if (badge.show) {
+      budgetHtml += `<div style="margin-top: 0.75rem; padding: 0.5rem; background: ${badge.color}; color: white; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${badge.text}</div>`;
+    }
+    
+    // Distribución del presupuesto
+    if (distribution) {
+      budgetHtml += `
+        <div style="margin-top: 1rem; padding: 1rem; background: var(--color-background-secondary); border-radius: 8px; border-left: 4px solid var(--color-primary);">
+          <h4 style="margin: 0 0 0.75rem 0; font-size: 0.9rem; color: var(--color-text-secondary);">💰 Distribución del presupuesto</h4>
+          <div style="display: grid; gap: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">✈️ Vuelos:</span>
+              <span style="font-weight: 600; color: var(--color-text);">${distribution.flights} €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">🏨 Hotel por noche:</span>
+              <span style="font-weight: 600; color: var(--color-text);">${distribution.hotel} €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">🎯 Actividades:</span>
+              <span style="font-weight: 600; color: var(--color-text);">${distribution.activities} €</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Presupuesto restante
+    if (remaining && remaining.spent > 0) {
+      const remainingColor = remaining.remaining >= 0 ? 'var(--color-success)' : 'var(--color-error)';
+      const remainingIcon = remaining.remaining >= 0 ? '✅' : '⚠️';
+      budgetHtml += `
+        <div style="margin-top: 1rem; padding: 1rem; background: var(--color-background-secondary); border-radius: 8px; border-left: 4px solid ${remainingColor};">
+          <h4 style="margin: 0 0 0.75rem 0; font-size: 0.9rem; color: var(--color-text-secondary);">📊 Resumen financiero</h4>
+          <div style="display: grid; gap: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">Presupuesto total:</span>
+              <span style="font-weight: 600; color: var(--color-text);">${remaining.budget} €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">Gastado:</span>
+              <span style="font-weight: 600; color: var(--color-text);">${remaining.spent} €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.5rem; border-top: 1px solid var(--color-border);">
+              <span style="color: var(--color-text-secondary); font-size: 0.875rem;">${remainingIcon} Restante:</span>
+              <span style="font-weight: 700; font-size: 1.1rem; color: ${remainingColor};">${remaining.remaining} €</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
   resultsEl.innerHTML = `
     <div class="result-card" style="animation-delay: 0ms;">
       <h3>📋 Resumen</h3>
-      <div class="result-summary">${summaryText}</div>
+      <div class="result-summary">${summaryText}${budgetHtml}</div>
     </div>
     ${renderFlights(flights, isOneWay, tripData)}
     ${renderHotels(hotels, tripData)}
@@ -406,6 +544,41 @@ function renderResponse(data, isOneWay = false, tripData = {}) {
   const resultCards = resultsEl.querySelectorAll(".result-card");
   resultCards.forEach((card, index) => {
     card.style.animationDelay = `${index * 100}ms`;
+  });
+}
+
+// Validación en tiempo real del presupuesto
+const budgetInput = document.getElementById("presupuestoMax");
+const budgetWarning = document.getElementById("budgetWarning");
+const budgetBadge = document.getElementById("budgetBadge");
+
+if (budgetInput && budgetWarning && budgetBadge) {
+  budgetInput.addEventListener('input', () => {
+    const value = Number(budgetInput.value);
+    
+    if (budgetInput.value === '' || value === 0) {
+      budgetWarning.style.display = 'none';
+      budgetBadge.style.display = 'none';
+      return;
+    }
+    
+    // Mostrar warning si es menor a 100
+    if (value < 100) {
+      budgetWarning.style.display = 'block';
+      budgetBadge.style.display = 'none';
+    } else {
+      budgetWarning.style.display = 'none';
+      
+      // Mostrar badge según rango
+      const badge = getBudgetBadge(value);
+      if (badge.show) {
+        budgetBadge.textContent = badge.text;
+        budgetBadge.style.color = badge.color;
+        budgetBadge.style.display = 'block';
+      } else {
+        budgetBadge.style.display = 'none';
+      }
+    }
   });
 }
 
@@ -429,6 +602,12 @@ form?.addEventListener("submit", async (e) => {
   // Validación obligatorios
   if (!origen || !destino || !fechaSalida) {
     setError("Completa origen, destino y fecha de salida.");
+    return;
+  }
+  
+  // Validar presupuesto mínimo si se proporciona
+  if (presupuestoMax !== null && presupuestoMax < 100) {
+    setError("El presupuesto mínimo es 100 €.");
     return;
   }
 
@@ -467,7 +646,8 @@ form?.addEventListener("submit", async (e) => {
       origen,
       destino,
       fechaSalida,
-      fechaVuelta
+      fechaVuelta,
+      presupuestoMax
     };
     
     renderResponse(data, isOneWay, tripData);
